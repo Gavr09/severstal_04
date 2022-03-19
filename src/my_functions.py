@@ -305,7 +305,7 @@ def plot_linkage(model):
     print('Recommended clusters num = ', k)
     
     
- # ФУНКЦИЯ ДЛЯ КЛАСТЕРИЗАЦИИ
+# ФУНКЦИЯ ДЛЯ КЛАСТЕРИЗАЦИИ
 def AgglClustering(dataNorm, n_clust, plt_dendrogram = False):
     clusters = AgglomerativeClustering(distance_threshold=None, n_clusters=n_clust).fit(dataNorm)
 
@@ -336,3 +336,26 @@ def AgglClustering(dataNorm, n_clust, plt_dendrogram = False):
 
         plot_linkage(model)
     return clusters
+
+# ФУНКЦИЯ ДЛЯ СОЗДАНИЯ ДАТАФРЕЙМОВ В ЗАВИСИМОСТИ ОТ КОЛ-ВА ИНТЕРЕСУЮЩИХ НАС ПРИЗНАКОВ СОГАЛСНО FEATURE IMPORTANCE
+def df_generation_based_on_amount_of_top_features(amount, X_train, X_test, imp):
+    
+    #print(f"Кол-во фитчей до: {X_train.shape[1]}")
+    #print(f"Кол-во топ фитчей: {amount}")
+    
+    X_train = X_train.copy()
+    X_test = X_test.copy()
+    
+    feature_names = pd.DataFrame(imp['feature_names']).rename(columns={0:'feature_names'})
+    feature_importance = pd.DataFrame(imp['feature_importance']).rename(columns={0:'feature_importance'})
+
+    df = pd.concat([feature_names, feature_importance], axis = 1).sort_values(by = 'feature_importance', ascending = False)
+    df = df.head(amount)
+    
+    list_of_new_columns = [column for column in (df.head(amount).feature_names.to_list()) if (column in list(X_train.columns))]
+    X_train_new = X_train[list_of_new_columns]
+    X_test_new = X_test[list_of_new_columns]
+
+    #print(f"Кол-во фитчей после: { X_train_new.shape[1]}")
+    
+    return X_train_new, X_test_new
